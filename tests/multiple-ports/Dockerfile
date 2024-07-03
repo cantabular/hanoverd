@@ -1,4 +1,4 @@
-FROM golang:1.22.3-alpine
+FROM golang:1.23rc1-alpine
 
 CMD ["multiple-ports"]
 EXPOSE 80 443
