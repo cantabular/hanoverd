@@ -3,7 +3,7 @@ module github.com/sensiblecodeio/hanoverd
 go 1.23.0
 
 require (
-	github.com/docker/docker v26.1.3+incompatible
+	github.com/docker/docker v26.1.5+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/docker/go-units v0.5.0
 	github.com/moby/buildkit v0.13.2
