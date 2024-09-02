@@ -13,6 +13,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
@@ -84,7 +85,7 @@ func DockerPullSourceFromImage(image string) *DockerPullSource {
 func (s *DockerPullSource) Obtain(c *docker.Client, payload []byte) (string, error) {
 	imageName := fmt.Sprintf("%s:%s", s.Repository, s.Tag)
 
-	rc, err := c.ImagePull(context.TODO(), imageName, types.ImagePullOptions{})
+	rc, err := c.ImagePull(context.TODO(), imageName, image.PullOptions{})
 	if err != nil {
 		return "", err
 	}

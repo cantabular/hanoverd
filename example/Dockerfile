@@ -1,4 +1,4 @@
-FROM alpine:3.15.1
+FROM alpine:3.20.2
 
 RUN apk --no-cache add netcat-openbsd
 

@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/sensiblecodeio/hookbot/pkg/listen"
 	"github.com/urfave/cli"
@@ -78,7 +78,7 @@ func Action(c *cli.Context) {
 
 		blankAuth := base64.URLEncoding.EncodeToString([]byte("{}"))
 
-		rc, err2 := client.ImagePush(context.TODO(), ref, types.ImagePushOptions{
+		rc, err2 := client.ImagePush(context.TODO(), ref, image.PushOptions{
 			RegistryAuth: blankAuth,
 		})
 		if err2 != nil {
