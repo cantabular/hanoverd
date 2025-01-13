@@ -14,14 +14,14 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/sensiblecodeio/hookbot/pkg/listen"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/sensiblecodeio/hanoverd/pkg/source"
 	"github.com/sensiblecodeio/hanoverd/pkg/util"
 )
 
 // Action is the codegangsta/cli action for running hanoverd in builder mode.
-func Action(c *cli.Context) {
+func Action(c *cli.Context) error {
 	_, imageSource, err := source.GetSourceFromHookbot(c.String("listen"))
 	if err != nil {
 		log.Fatalf("Failed to parse hookbot listen URL: %v", err)
@@ -115,6 +115,7 @@ func Action(c *cli.Context) {
 	}
 
 	log.Printf("Event stream finished")
+	return nil
 }
 
 func ParseRegistryImage(fullName string) (registry, repository string) {
