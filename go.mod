@@ -1,6 +1,6 @@
 module github.com/sensiblecodeio/hanoverd
 
-go 1.23.0
+go 1.23.4
 
 require (
 	github.com/docker/docker v27.2.0+incompatible
