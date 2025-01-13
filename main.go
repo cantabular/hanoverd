@@ -21,7 +21,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/sensiblecodeio/barrier"
 	"github.com/sensiblecodeio/hookbot/pkg/listen"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/sensiblecodeio/hanoverd/pkg/builder"
 	"github.com/sensiblecodeio/hanoverd/pkg/iptables"
@@ -79,41 +79,41 @@ func main() {
 	app.Version = Version
 
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "disable-overlap",
 			Usage: "shut down old container before starting new one",
 		},
-		cli.StringSliceFlag{
+		&cli.StringSliceFlag{
 			Name:  "env, e",
 			Usage: "environment variables to pass (reads from env if = omitted)",
 			Value: &cli.StringSlice{},
 		},
-		cli.StringSliceFlag{
+		&cli.StringSliceFlag{
 			Name:  "publish, p",
 			Usage: "ports to publish (same syntax as docker)",
 			Value: &cli.StringSlice{},
 		},
-		cli.StringSliceFlag{
+		&cli.StringSliceFlag{
 			Name:  "volume, v",
 			Usage: "Bind mount a volume",
 			Value: &cli.StringSlice{},
 		},
-		cli.StringSliceFlag{
+		&cli.StringSliceFlag{
 			Name:  "mount, m",
 			Usage: "Supply mounts",
 			Value: &cli.StringSlice{},
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "status-uri",
 			Usage: "specify URI which returns 200 OK when functioning correctly",
 			Value: "/",
 		},
-		cli.StringFlag{
-			Name:   "hookbot",
-			Usage:  "url of hookbot websocket endpoint to monitor for updates",
-			EnvVar: "HOOKBOT_URL",
+		&cli.StringFlag{
+			Name:    "hookbot",
+			Usage:   "url of hookbot websocket endpoint to monitor for updates",
+			EnvVars: []string{"HOOKBOT_URL"},
 		},
-		cli.DurationFlag{
+		&cli.DurationFlag{
 			Name:  "overlap-grace-duration",
 			Usage: "length of time to wait before killing a superceded container",
 			Value: 1 * time.Second,
@@ -122,33 +122,36 @@ func main() {
 
 	app.Action = ActionRun
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:   "builder",
 			Action: builder.Action,
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:   "listen",
-					Usage:  "url of hookbot websocket endpoint to monitor for updates",
-					EnvVar: "HOOKBOT_MONITOR_URL",
+				&cli.StringFlag{
+					Name:    "listen",
+					Usage:   "url of hookbot websocket endpoint to monitor for updates",
+					EnvVars: []string{"HOOKBOT_MONITOR_URL"},
 				},
-				cli.StringFlag{
-					Name:   "docker-notify",
-					Usage:  "url of hookbot pub endpoint to notify on complete build",
-					EnvVar: "HOOKBOT_DOCKER_NOTIFY_URL",
+				&cli.StringFlag{
+					Name:    "docker-notify",
+					Usage:   "url of hookbot pub endpoint to notify on complete build",
+					EnvVars: []string{"HOOKBOT_DOCKER_NOTIFY_URL"},
 				},
 			},
 		},
 		{
-			Name:   "version",
-			Action: cli.ShowVersion,
+			Name: "version",
+			Action: func(cCtx *cli.Context) error {
+				cli.ShowVersion(cCtx)
+				return nil
+			},
 		},
 	}
 
 	app.RunAndExitOnError()
 }
 
-func ActionRun(c *cli.Context) {
+func ActionRun(c *cli.Context) error {
 	var err error
 
 	options := Options{}
@@ -162,22 +165,22 @@ func ActionRun(c *cli.Context) {
 	containerName := "hanoverd"
 	var imageSource source.ImageSource
 
-	if c.GlobalString("hookbot") != "" {
+	if c.String("hookbot") != "" {
 
-		hookbotURL := c.GlobalString("hookbot")
+		hookbotURL := c.String("hookbot")
 		containerName, imageSource, err = source.GetSourceFromHookbot(hookbotURL)
 		if err != nil {
 			log.Fatalf("Failed to parse hookbot source: %v", err)
 		}
 
-		options.containerArgs = c.Args()
+		options.containerArgs = c.Args().Slice()
 
-	} else if len(c.Args()) == 0 {
+	} else if c.Args().Len() == 0 {
 		imageSource = &source.CwdSource{}
 
 	} else {
 		first := c.Args().First()
-		args := c.Args()[1:]
+		args := c.Args().Slice()[1:]
 
 		if first == "@" {
 			// If the first arg is "@", then use the Cwd
@@ -250,13 +253,14 @@ func ActionRun(c *cli.Context) {
 		value = <-sig
 	}()
 
-	if c.GlobalString("hookbot") != "" {
-		go MonitorHookbot(c.GlobalString("hookbot"), events)
+	if c.String("hookbot") != "" {
+		go MonitorHookbot(c.String("hookbot"), events)
 	}
 
 	go loop(containerName, imageSource, &wg, &dying, options, events)
 
 	<-dying.Barrier()
+	return nil
 }
 
 func MonitorHookbot(target string, notify chan<- *UpdateEvent) {
