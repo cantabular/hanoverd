@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,7 +22,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/sensiblecodeio/barrier"
 	"github.com/sensiblecodeio/hookbot/pkg/listen"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
 	"github.com/sensiblecodeio/hanoverd/pkg/builder"
 	"github.com/sensiblecodeio/hanoverd/pkg/iptables"
@@ -67,91 +68,89 @@ func IsStdinReadable() bool {
 }
 
 func main() {
-	app := cli.NewApp()
+	cmd := cli.Command{
 
-	app.Name = "hanoverd"
-	app.Usage = "handover docker containers"
+		Name:  "hanoverd",
+		Usage: "handover docker containers",
 
-	// Use `hanoverd version` rather than `hanoverd -v`
-	app.HideVersion = true
+		// Use `hanoverd version` rather than `hanoverd -v`
+		HideVersion: true,
 
-	// Made by `go generate` populating version.go via `git describe`.
-	app.Version = Version
+		// Made by `go generate` populating version.go via `git describe`.
+		Version: Version,
 
-	app.Flags = []cli.Flag{
-		&cli.BoolFlag{
-			Name:  "disable-overlap",
-			Usage: "shut down old container before starting new one",
-		},
-		&cli.StringSliceFlag{
-			Name:  "env, e",
-			Usage: "environment variables to pass (reads from env if = omitted)",
-			Value: &cli.StringSlice{},
-		},
-		&cli.StringSliceFlag{
-			Name:  "publish, p",
-			Usage: "ports to publish (same syntax as docker)",
-			Value: &cli.StringSlice{},
-		},
-		&cli.StringSliceFlag{
-			Name:  "volume, v",
-			Usage: "Bind mount a volume",
-			Value: &cli.StringSlice{},
-		},
-		&cli.StringSliceFlag{
-			Name:  "mount, m",
-			Usage: "Supply mounts",
-			Value: &cli.StringSlice{},
-		},
-		&cli.StringFlag{
-			Name:  "status-uri",
-			Usage: "specify URI which returns 200 OK when functioning correctly",
-			Value: "/",
-		},
-		&cli.StringFlag{
-			Name:    "hookbot",
-			Usage:   "url of hookbot websocket endpoint to monitor for updates",
-			EnvVars: []string{"HOOKBOT_URL"},
-		},
-		&cli.DurationFlag{
-			Name:  "overlap-grace-duration",
-			Usage: "length of time to wait before killing a superceded container",
-			Value: 1 * time.Second,
-		},
-	}
-
-	app.Action = ActionRun
-
-	app.Commands = []*cli.Command{
-		{
-			Name:   "builder",
-			Action: builder.Action,
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:    "listen",
-					Usage:   "url of hookbot websocket endpoint to monitor for updates",
-					EnvVars: []string{"HOOKBOT_MONITOR_URL"},
-				},
-				&cli.StringFlag{
-					Name:    "docker-notify",
-					Usage:   "url of hookbot pub endpoint to notify on complete build",
-					EnvVars: []string{"HOOKBOT_DOCKER_NOTIFY_URL"},
-				},
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "disable-overlap",
+				Usage: "shut down old container before starting new one",
+			},
+			&cli.StringSliceFlag{
+				Name:  "env, e",
+				Usage: "environment variables to pass (reads from env if = omitted)",
+			},
+			&cli.StringSliceFlag{
+				Name:  "publish, p",
+				Usage: "ports to publish (same syntax as docker)",
+			},
+			&cli.StringSliceFlag{
+				Name:  "volume, v",
+				Usage: "Bind mount a volume",
+			},
+			&cli.StringSliceFlag{
+				Name:  "mount, m",
+				Usage: "Supply mounts",
+			},
+			&cli.StringFlag{
+				Name:  "status-uri",
+				Usage: "specify URI which returns 200 OK when functioning correctly",
+				Value: "/",
+			},
+			&cli.StringFlag{
+				Name:    "hookbot",
+				Usage:   "url of hookbot websocket endpoint to monitor for updates",
+				Sources: cli.EnvVars("HOOKBOT_URL"),
+			},
+			&cli.DurationFlag{
+				Name:  "overlap-grace-duration",
+				Usage: "length of time to wait before killing a superceded container",
+				Value: 1 * time.Second,
 			},
 		},
-		{
-			Name: "version",
-			Action: func(cCtx *cli.Context) error {
-				cli.ShowVersion(cCtx)
-				return nil
+		Action: ActionRun,
+
+		Commands: []*cli.Command{
+			{
+				Name:   "builder",
+				Action: builder.Action,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "listen",
+						Usage:   "url of hookbot websocket endpoint to monitor for updates",
+						Sources: cli.EnvVars("HOOKBOT_MONITOR_URL"),
+					},
+					&cli.StringFlag{
+						Name:    "docker-notify",
+						Usage:   "url of hookbot pub endpoint to notify on complete build",
+						Sources: cli.EnvVars("HOOKBOT_DOCKER_NOTIFY_URL"),
+					},
+				},
+			},
+			{
+				Name: "version",
+				Action: func(_ context.Context, c *cli.Command) error {
+					cli.ShowVersion(c)
+					return nil
+				},
 			},
 		},
 	}
 
-	app.RunAndExitOnError()
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func ActionRun(c *cli.Context) error {
+func ActionRun(_ context.Context, c *cli.Command) error {
 	var err error
 
 	options := Options{}
