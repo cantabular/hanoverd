@@ -85,20 +85,24 @@ func main() {
 				Usage: "shut down old container before starting new one",
 			},
 			&cli.StringSliceFlag{
-				Name:  "env, e",
-				Usage: "environment variables to pass (reads from env if = omitted)",
+				Name:    "env",
+				Aliases: []string{"e"},
+				Usage:   "environment variables to pass (reads from env if = omitted)",
 			},
 			&cli.StringSliceFlag{
-				Name:  "publish, p",
-				Usage: "ports to publish (same syntax as docker)",
+				Name:    "publish",
+				Aliases: []string{"p"},
+				Usage:   "ports to publish (same syntax as docker)",
 			},
 			&cli.StringSliceFlag{
-				Name:  "volume, v",
-				Usage: "Bind mount a volume",
+				Name:    "volume",
+				Aliases: []string{"v"},
+				Usage:   "Bind mount a volume",
 			},
 			&cli.StringSliceFlag{
-				Name:  "mount, m",
-				Usage: "Supply mounts",
+				Name:    "mount",
+				Aliases: []string{"m"},
+				Usage:   "Supply mounts",
 			},
 			&cli.StringFlag{
 				Name:  "status-uri",
