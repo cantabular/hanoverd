@@ -361,7 +361,7 @@ func DockerBuildDirectory(c *docker.Client, name, path string) error {
 func contextFromDir(contextDir string) (io.ReadCloser, error) {
 	relDockerfile := "Dockerfile"
 	// And canonicalize dockerfile name to a platform-independent one
-	relDockerfile = archive.CanonicalTarNameForPath(relDockerfile)
+	relDockerfile = filepath.ToSlash(relDockerfile)
 
 	f, err := os.Open(filepath.Join(contextDir, ".dockerignore"))
 	if err != nil && !os.IsNotExist(err) {
