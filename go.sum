@@ -76,6 +76,8 @@ github.com/sensiblecodeio/git-prep-directory v0.8.1 h1:oN1mcXpJv5DM56wY40IpxxPUr
 github.com/sensiblecodeio/git-prep-directory v0.8.1/go.mod h1:fjCc+qmaYVrUJBcv8mD7UWY9RsznwfzbTqa0YfX8rlw=
 github.com/sensiblecodeio/hookbot v0.17.0 h1:Jz+fHKlA2Kn+o1CgRCnklOeEfYz8N2Wco4cZELLFTcA=
 github.com/sensiblecodeio/hookbot v0.17.0/go.mod h1:PRDDEjy4yQNSxymWFSAp2JoxoBZFQquWx1fOTgz9DYs=
+github.com/sensiblecodeio/hookbot v0.18.0 h1:bzuIsNDJIAtQwWNBJ2XcdD0D8aUpKYmOGdct4Rlmlj4=
+github.com/sensiblecodeio/hookbot v0.18.0/go.mod h1:PRDDEjy4yQNSxymWFSAp2JoxoBZFQquWx1fOTgz9DYs=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
