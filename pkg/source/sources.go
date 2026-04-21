@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -336,6 +337,39 @@ func HaveSSHKey() bool {
 	return false
 }
 
+// CleanDockerTag converts a string (like a Git branch) into a valid Docker tag.
+// Docker Tag Rules:
+// 1. Valid chars: a-z, A-Z, 0-9, dot (.), underscore (_), minus (-).
+// 2. Max length: 128 characters.
+// 3. Cannot start with a dot (.) or minus (-).
+func CleanDockerTag(input string) string {
+	// 1. Replace any invalid character with a hyphen
+	// This regex matches anything that is NOT alphanumeric, dot, or underscore
+	// We deliberately include '-' in the invalid group initially to collapse multiple dashes later
+	invalidChars := regexp.MustCompile(`[^a-zA-Z0-9._]`)
+	sanitized := invalidChars.ReplaceAllString(input, "-")
+
+	// 2. Collapse multiple hyphens into one (e.g., "feature//branch" -> "feature-branch")
+	multiHyphens := regexp.MustCompile(`-+`)
+	sanitized = multiHyphens.ReplaceAllString(sanitized, "-")
+
+	// 3. Remove leading/trailing periods or hyphens
+	// Docker tags cannot start with . or -
+	sanitized = strings.Trim(sanitized, ".-")
+
+	// 4. Truncate to 128 characters (Docker's strict limit)
+	if len(sanitized) > 128 {
+		sanitized = sanitized[:128]
+	}
+
+	// 5. Fallback for empty strings (if input was just "///")
+	if sanitized == "" {
+		sanitized = "unknown"
+	}
+
+	return sanitized
+}
+
 func DockerBuildDirectory(c *docker.Client, name, path string) error {
 	buildCtx, err := contextFromDir(path)
 	if err != nil {
@@ -346,7 +380,7 @@ func DockerBuildDirectory(c *docker.Client, name, path string) error {
 		buildCtx,
 		types.ImageBuildOptions{
 			Remove: true,
-			Tags:   []string{name},
+			Tags:   []string{CleanDockerTag(name)},
 		},
 	)
 	if err != nil {

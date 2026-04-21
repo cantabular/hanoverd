@@ -66,6 +66,7 @@ func Action(_ context.Context, c *cli.Command) error {
 
 	build := func() error {
 		name, err2 := imageSource.Obtain(client, []byte{})
+		name = source.CleanDockerTag(name)
 		if err2 != nil {
 			return fmt.Errorf("obtain: %v", err2)
 		}
