@@ -10,7 +10,7 @@ require (
 	github.com/moby/patternmatcher v0.6.0
 	github.com/sensiblecodeio/barrier v0.4.0
 	github.com/sensiblecodeio/git-prep-directory v0.8.1
-	github.com/sensiblecodeio/hookbot v0.18.0
+	github.com/sensiblecodeio/hookbot v0.19.0
 	github.com/urfave/cli/v3 v3.4.1
 	golang.org/x/sys v0.37.0
 )
