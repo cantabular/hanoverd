@@ -16,9 +16,10 @@ import (
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	docker "github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
+	"github.com/moby/go-archive"
+	"github.com/moby/go-archive/compression"
 	"github.com/moby/patternmatcher"
 	git "github.com/sensiblecodeio/git-prep-directory"
 )
@@ -395,7 +396,7 @@ func contextFromDir(contextDir string) (io.ReadCloser, error) {
 		includes = append(includes, ".dockerignore", relDockerfile)
 	}
 
-	compression := archive.Uncompressed // likely on localhost.
+	var compression compression.Compression = compression.None
 	buildCtx, err := archive.TarWithOptions(contextDir, &archive.TarOptions{
 		Compression:     compression,
 		ExcludePatterns: excludes,
